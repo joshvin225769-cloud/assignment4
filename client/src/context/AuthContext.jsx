@@ -1,5 +1,6 @@
+
 import { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -10,34 +11,38 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data } = await api.get('/auth/me');
+        setUser(data);
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     checkAuth();
   }, []);
 
-  const checkAuth = async () => {
-    try {
-      const { data } = await axios.get('/api/auth/me');
-      setUser(data);
-    } catch (error) {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const login = async (email, password) => {
-    const { data } = await axios.post('/api/auth/login', { email, password });
+    const { data } = await api.post('/auth/login', { email, password });
     setUser(data);
     return data;
   };
 
   const register = async (name, email, password) => {
-    const { data } = await axios.post('/api/auth/register', { name, email, password });
+    const { data } = await api.post('/auth/register', {
+      name,
+      email,
+      password,
+    });
     setUser(data);
     return data;
   };
 
   const logout = async () => {
-    await axios.post('/api/auth/logout');
+    await api.post('/auth/logout');
     setUser(null);
   };
 
